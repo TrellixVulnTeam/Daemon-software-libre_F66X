@@ -1,0 +1,10 @@
+[Unit]
+Description=A safe service to keep you safe
+After=network.target
+
+[Service]
+ExecStart=/snap/bin/node /home/nico/softlibre/Daemon-software-libre/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -3,40 +3,50 @@ const bus = dbus.systemBus()
 const fs = require('fs')
 const path = require('path')
 const client = require("./client.js")
+const PORT = process.env.SAFEPORT || 4000
+const HOST = process.env.SAFEHOST || '127.0.0.1'
+
 
 
 async function waitForDevices(){
     let job_path;
+    let block_device;
     let obj = await bus.getProxyObject('org.freedesktop.UDisks2','/org/freedesktop/UDisks2')
     let manager = obj.getInterface('org.freedesktop.DBus.ObjectManager')
 
     manager.on('InterfacesAdded', (path, dict) => {
-        //console.log(dict)
+        
         if('org.freedesktop.UDisks2.Job' in dict){
-            //console.log(dict)
             job_path = path;
+        }
+        else{
+            if (path.includes("block_devices")){
+                let splitted = path.split('/')
+                block_device = splitted[splitted.length-1].trim()
+            }
         }
     })
 
     manager.on('InterfacesRemoved', async (path, dict) => {
         if(path == job_path){
-            scanFiles();
+            scanFiles(await getRoute(block_device));
         }
     })
 }
 
-async function scanFiles(){
-    const ruta = path.join('/', 'media');
+async function scanFiles(route){
+
     let array = []
-    let files = getAllFiles(ruta,array)
+    let files = getAllFiles(route,array)
 
     files.forEach( (file) => {
-        client.sendFile(file,'127.0.0.1','4000')
-        //console.log(file)
+        console.log(file);
+        if (!file.includes("System Volume Information")) 
+            client.sendFile(file,SAFEHOST,SAFEPORT)
     })
 }
 
-//obtiene todos los archivos recursivamente a partir de un directorio
+//Obtiene todos los archivos recursivamente a partir de un directorio
 const getAllFiles = function(dirPath, arrayOfFiles) {
     files = fs.readdirSync(dirPath)
   
@@ -52,9 +62,21 @@ const getAllFiles = function(dirPath, arrayOfFiles) {
     return arrayOfFiles
   }
 
+  //Obtiene el mount path del dispositivo conectado
+  async function getRoute(block_device) {
+      let mounts = fs.readFileSync("/etc/mtab",{'encoding':'ascii'}).split("\n")
+      for (i in mounts){
+          let mount_detail = mounts[i].split(" ")
+          if (mounts[i].includes(block_device)){
+              return mount_detail[1];
+          }
+      }
+      return false;
+  }
 
 waitForDevices()
 //scanFiles()
+
 
 /*
 async function scanFiles(){
