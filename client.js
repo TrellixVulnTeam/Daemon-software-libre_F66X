@@ -30,9 +30,8 @@ async function sendFile(file, ip, port) {
   })
 }
 
-sendFile('prueba.txt','127.0.0.1','4000');
-
+//sendFile('prueba.txt','127.0.0.1','4000');
 
 module.exports = {
-  sendFile,
+  sendFile
 };
